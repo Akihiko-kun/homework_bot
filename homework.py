@@ -36,12 +36,12 @@ HOMEWORK_VERDICTS = {
 
 
 def check_tokens():
-    """"проверяет доступность переменных окружения."""
+    """проверяет доступность переменных окружения."""
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def send_message(bot, message):
-    """"отправляет сообщение в Telegram чат."""
+    """отправляет сообщение в Telegram чат."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.debug('Сообщение в чат {TELEGRAM_CHAT_ID}: {message}')
@@ -53,7 +53,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(timestamp):
-    """"делает запрос к единственному эндпоинту API-сервиса."""
+    """делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
@@ -77,7 +77,7 @@ def get_api_answer(timestamp):
 
 
 def check_response(response):
-    """"роверяет ответ API на соответствие документации."""
+    """роверяет ответ API на соответствие документации."""
     if isinstance(response, dict):
         if 'homeworks' in response:
             if isinstance(response.get('homeworks'), list):
@@ -89,7 +89,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """"извлекает из информации о конкретной домашней работе. """
+    """извлекает из информации о конкретной домашней работе."""
     if 'homework_name' not in homework:
         raise KeyError('Отсутствует ключ "homework_name" в ответе API')
     if 'status' not in homework:
