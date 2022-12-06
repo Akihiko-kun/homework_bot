@@ -40,6 +40,8 @@ class APIError(Exception):
 
 
 class message_API_Error(Exception):
+    """Исключение для send_massage."""
+
     pass
 
 
