@@ -39,6 +39,10 @@ class APIError(Exception):
     pass
 
 
+class message_API_Error(Exception):
+    pass
+
+
 def check_tokens():
     """проверяет доступность переменных окружения."""
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
@@ -51,7 +55,7 @@ def send_message(bot, message):
         logger.info('Сообщение в чат {TELEGRAM_CHAT_ID}: {message}')
     except Exception:
         logger.error('Ошибка отправки сообщения в телеграм')
-        raise Exception('Ошибка отправки сообщения в телеграм')  # Исключение
+        raise message_API_Error('Ошибка отправки сообщения в телеграм')
     else:
         logging.debug(f'Сообщение отправлено {message}')
 
@@ -117,7 +121,6 @@ def main():
         logging.critical(msg)
         sys.exit(msg)
 
-    error_cache_message = ''
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time())
 
@@ -131,14 +134,12 @@ def main():
                 timestamp = response['current_date']
             else:
                 logging.info('Новых заданий нет')
-        except APIError as error:
-            logger.error(error)
-        except Exception as error:
+        except message_API_Error as error:
             logger.error(error)
             error_message = f'Ошибка: {error}'
-            if error_message != error_cache_message:
-                send_message(bot, error_message)
-                error_cache_message = error_message
+            send_message(bot, error_message)
+        except Exception as error:
+            logger.error(error)
         finally:
             time.sleep(RETRY_PERIOD)
 
