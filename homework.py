@@ -1,12 +1,12 @@
+import logging
 import os
 import sys
-import logging
 import time
 from http import HTTPStatus
 
+import requests
 import telegram
 from dotenv import load_dotenv
-import requests
 
 load_dotenv()
 logging.basicConfig(
@@ -35,7 +35,6 @@ HOMEWORK_VERDICTS = {
 
 class APIError(Exception):
     """Если API не захочет работать."""
-
     pass
 
 
@@ -51,7 +50,7 @@ def send_message(bot, message):
         logger.info('Сообщение в чат {TELEGRAM_CHAT_ID}: {message}')
     except Exception:
         logger.error('Ошибка отправки сообщения в телеграм')
-        raise APIError('Ошибка отправки сообщения в телеграм')
+        raise Exception('Ошибка отправки сообщения в телеграм')  # Исключение
     else:
         logging.debug(f'Сообщение отправлено {message}')
 
@@ -82,14 +81,16 @@ def get_api_answer(timestamp):
 
 def check_response(response):
     """роверяет ответ API на соответствие документации."""
-    if isinstance(response, dict):
-        if 'homeworks' in response:
-            if isinstance(response.get('homeworks'), list):
-                logging.info('response checked- ok')
-                return response.get('homeworks')
-            raise TypeError('Ошибка, возращает не список.')
+    if not isinstance(response, dict):
+        raise TypeError('Ошибка, возращает не список.')
+    if 'homeworks' not in response:
         raise KeyError('Homeworks не найден.')
-    raise TypeError('Запрос возвращает не словарь.')
+    homeworks = response.get('homeworks')
+    if not isinstance(homeworks, list):
+        raise TypeError('Запрос возвращает не словарь.')
+    if homeworks:
+        return homeworks
+    return None
 
 
 def parse_status(homework):
@@ -115,7 +116,7 @@ def main():
         logging.critical(msg)
         sys.exit(msg)
 
-    ERROR_CACHE_MESSAGE = ''
+    error_cache_message = ''
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     timestamp = int(time.time())
 
@@ -129,16 +130,17 @@ def main():
                 timestamp = response['current_date']
             else:
                 logging.info('Новых заданий нет')
+        except APIError as error:
+            logger.error(error)
         except Exception as error:
             logger.error(error)
             error_message = f'Ошибка: {error}'
-            if error_message != ERROR_CACHE_MESSAGE:
+            if error_message != error_cache_message:
                 send_message(bot, error_message)
-                ERROR_CACHE_MESSAGE = error_message
+                error_cache_message = error_message
         finally:
             time.sleep(RETRY_PERIOD)
 
 
 if __name__ == '__main__':
-
     main()
