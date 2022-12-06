@@ -35,6 +35,7 @@ HOMEWORK_VERDICTS = {
 
 class APIError(Exception):
     """Если API не захочет работать."""
+
     pass
 
 
