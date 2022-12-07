@@ -39,7 +39,7 @@ class APIError(Exception):
     pass
 
 
-class message_API_Error(Exception):
+class MessageError(Exception):
     """Исключение для send_massage."""
 
     pass
@@ -57,7 +57,7 @@ def send_message(bot, message):
         logger.info('Сообщение в чат {TELEGRAM_CHAT_ID}: {message}')
     except Exception:
         logger.error('Ошибка отправки сообщения в телеграм')
-        raise message_API_Error('Ошибка отправки сообщения в телеграм')
+        raise MessageError('Ошибка отправки сообщения в телеграм')
     else:
         logging.debug(f'Сообщение отправлено {message}')
 
@@ -136,8 +136,7 @@ def main():
                 timestamp = response['current_date']
             else:
                 logging.info('Новых заданий нет')
-        except message_API_Error as error:
-            logger.error(error)
+        except MessageError as error:
             error_message = f'Ошибка: {error}'
             send_message(bot, error_message)
         except Exception as error:
