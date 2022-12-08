@@ -136,11 +136,10 @@ def main():
                 timestamp = response['current_date']
             else:
                 logging.info('Новых заданий нет')
-        except MessageError as error:
-            error_message = f'Ошибка: {error}'
-            send_message(bot, error_message)
+        except MessageError:
+            pass
         except Exception as error:
-            logger.error(error)
+            send_message(bot, f'Ошибка: {error}')
         finally:
             time.sleep(RETRY_PERIOD)
 
